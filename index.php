@@ -1,9 +1,3 @@
-<?php
-
-$pdo = new PDO('mysql:host=localhost;port=3306;dbname=products','root','787878');
-$pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
-
-$statment = $pdo->prepare('SELECT * FROM products ORDER BY create_date ');
 $statment ->execute();
 $products = $statment->fetchAll(PDO::FETCH_ASSOC);
 
@@ -25,12 +19,20 @@ $products = $statment->fetchAll(PDO::FETCH_ASSOC);
   </head>
   <body>
     <h1>Products</h1>
-    <table class="table">
 
-  <thead>
-  <p>
+      <p>
             <a href="create.php" class="btn btn-success">Create</a>
-        </p>
+      </p>
+<form>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Search for product" name="search">
+        <button class="btn btn-outline-secondary" type="submit">Search</button>
+  </div>
+</form>
+
+
+    <table class="table">
+  <thead>
     <tr>
       <th scope="col">#</th>
       <th scope="col">title</th>
