@@ -2,26 +2,30 @@
 
 require_once "functions.php";
 
+$id = $_GET['id'] ?? null;
+if (!$id) {
+    header('Location: index.php');
+    exit;
+}
+
 $pdo = new PDO('mysql:host=localhost;port=3306;dbname=products','root','787878');
 $pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
-$errors = [];
+$statement = $pdo->prepare('SELECT * FROM products WHERE id = :id');
+$statement->bindValue(':id', $id);
+$statement->execute();
+$product = $statement->fetch(PDO::FETCH_ASSOC);
 
-$title = '';
-$description = '';
-$price = '';
+
+$title = $product['title'];
+$description = $product['description'];
+$price = $product['price'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $title = $_POST['title'];
     $description = $_POST['description'];
     $price = $_POST['price'];
-
-    if (!$title) {
-      $errors[] = 'product title is required';
-  }
-  if (!$price) {
-      $errors[] = 'product price is required';
-  }
 
     $image = $_FILES['image'] ?? null;
     $imagePath = '';
@@ -30,7 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mkdir('images');
     }
 
-    if ($image && $image['tmp_name']) {
+    if ($image) {
+        if ($product['image']) {
+            unlink($product['image']);
+        }
         $imagePath = 'images/' . randomString(8) . '/' . $image['name'];
         mkdir(dirname($imagePath));
         move_uploaded_file($image['tmp_name'], $imagePath);
@@ -45,13 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $statement = $pdo->prepare("INSERT INTO products (title, image, description, price, create_date)
-                VALUES (:title, :image, :description, :price, :date)");
+        $statement = $pdo->prepare("UPDATE products SET title = :title, 
+                                        image = :image, 
+                                        description = :description, 
+                                        price = :price WHERE id = :id");
         $statement->bindValue(':title', $title);
         $statement->bindValue(':image', $imagePath);
         $statement->bindValue(':description', $description);
         $statement->bindValue(':price', $price);
-        $statement->bindValue(':date', date('Y-m-d H:i:s'));
+        $statement->bindValue(':id', $id);
 
         $statement->execute();
         header('Location: index.php');
@@ -59,12 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 }
 
-
 ?>
-
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -75,17 +82,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <title>Products</title>
   </head>
-  <body>
-      <div class="product-form">  <h1>Create new product</h1>
+<body>
+<p>
+    <a href="index.php" class="back_btn"> < Back to products</a>
+</p>
+<div class="product-form">
+<h1>Update Product: <b><?php echo $product['title'] ?></b></h1>
 
-      <?php ?>
-      <div class="alert-danger">
-          <?php foreach($errors as $error): ?>
-            <div><?php echo  $error?></div>
-          <?php endforeach;?>
+<?php if (!empty($errors)): ?>
+    <div class="alert alert-danger">
+        <?php foreach ($errors as $error): ?>
+            <div><?php echo $error ?></div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
 
-      </div>
-    <form action="" method="POST" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" >
+    <?php if ($product['image']): ?>
+        <img src="<?php echo $product['image'] ?>" class="product-img">
+    <?php endif; ?>
+    <div class="form-group">
+        <label>Product Image</label><br>
+        <input type="file" name="image">
+    </div>
+    <div class="mb-3">
+    <label>title</label>
+    <input type="text" class="form-control" name="title" value="<?php echo $title ?>"> 
+  </div>
+  <div class="mb-3">
+    <label>price</label>
+    <input type="number" step="0.1" class="form-control" name="price" value="<?php echo $price ?>">
+  </div>
+    <div class="mb-3">
+    <label>Description</label>
+    <textarea class="form-control" name="description" value="<?php echo $description ?>"></textarea>
+  </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+</div>
+
+
+<!-- <form action="" method="POST" enctype="multipart/form-data">
     <button type="submit" class="btn btn-success">Submit</button>
   <div class="mb-3">
     <label>title</label>
@@ -99,12 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <label>Description</label>
     <textarea class="form-control" name="description" value="<?php echo $description ?>"></textarea>
   </div>
-  <div class="mb-3">
-    <label>image</label>
-    <input type="file" class="form-control" name="image">
   </div>
-  </div>
-</form>
-</div>
+</form> -->
+
 </body>
 </html>

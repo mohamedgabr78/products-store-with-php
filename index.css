@@ -1,5 +1,5 @@
 body{
-    padding: 5%;
+    padding: 3%;
 
 }
 h1{
@@ -8,7 +8,7 @@ h1{
 table{
     background-color: beige;
 }
-.create-form{
+.product-form{
     width: 100%;
     padding: 50px;
     background-color:beige;
@@ -18,3 +18,10 @@ table{
     width: 100px;
     height: 100px;
 }
+.back_btn{
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(145, 145, 72);
+    text-decoration: none;
+}
+
