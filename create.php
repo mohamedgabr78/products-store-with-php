@@ -1,71 +1,67 @@
 <?php
 
+require_once "functions.php";
+
 $pdo = new PDO('mysql:host=localhost;port=3306;dbname=products','root','787878');
 $pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
 $errors = [];
 
-
 $title = '';
 $description = '';
-$price = 0;
-$date = '';
+$price = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-if($_SERVER['REQUEST_METHOD'] === 'POST'){
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $price = $_POST['price'];
 
-$title = $_POST['title'];
-$description = $_POST['description'];
-$price = $_POST['price'];
-$date = date('Y-m-d H:i:s');
+    if (!$title) {
+      $errors[] = 'product title is required';
+  }
+  if (!$price) {
+      $errors[] = 'product price is required';
+  }
 
-if (!$title) {
-    $errors[] = 'product title is required';
-}
-if (!$price) {
-    $errors[] = 'product price is required';
-}
+    $image = $_FILES['image'] ?? null;
+    $imagePath = '';
 
-if(!is_dir('images')){
-  mkdir('images');
-}
-
-if(empty($errors)){
-
-  $image = $_FILES['image'] ?? null;
-  $imagePath = '';
-
-
-  function randomString($n){
-    $charachters = '0123456789abcdefghiklmnopqrstvxyzABCDEFGHIKLMNOPQRSTVXYZ';
-    $str = '';
-    for($i=0;$i<$n;$i++){
-      $index = rand(0,strlen($charachters)-1);
-      $str = $charachters[$index];
+    if (!is_dir('images')) {
+        mkdir('images');
     }
-  }
-  
-  if($image && $image['tpm_name']){ 
-    $imagePath = 'images/'.randomString(8).'/'.$image['name'];
-    mkdir(dirname($imagePath));
-    move_uploaded_file($image['tmp_name'],$imagePath);
-  }
 
+    if ($image && $image['tmp_name']) {
+        $imagePath = 'images/' . randomString(8) . '/' . $image['name'];
+        mkdir(dirname($imagePath));
+        move_uploaded_file($image['tmp_name'], $imagePath);
+    }
 
-  $statment = $pdo->prepare("INSERT INTO products (title,image,description,price,create_date)
-    VALUES (:title, :image, :description, :price, :date)
-    ");
-$statment->bindValue(':title',$title);
-$statment->bindValue(':image',$imagePath);
-$statment->bindValue(':description',$description);
-$statment->bindValue(':price',$price);
-$statment->bindValue(':date',$date); 
-$statment->execute();
+    if (!$title) {
+        $errors[] = 'Product title is required';
+    }
 
-header('Location:index.php');
+    if (!$price) {
+        $errors[] = 'Product price is required';
+    }
+
+    if (empty($errors)) {
+        $statement = $pdo->prepare("INSERT INTO products (title, image, description, price, create_date)
+                VALUES (:title, :image, :description, :price, :date)");
+        $statement->bindValue(':title', $title);
+        $statement->bindValue(':image', $imagePath);
+        $statement->bindValue(':description', $description);
+        $statement->bindValue(':price', $price);
+        $statement->bindValue(':date', date('Y-m-d H:i:s'));
+
+        $statement->execute();
+        header('Location: index.php');
+    }
+
 }
-}
+
 
 ?>
+
 <!doctype html>
 <html lang="en">
   <head>
