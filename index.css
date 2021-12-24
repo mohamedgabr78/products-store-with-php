@@ -2,6 +2,9 @@ body{
     padding: 5%;
 
 }
+h1{
+    color: rgb(145, 145, 72);
+}
 table{
     background-color: beige;
 }
@@ -10,4 +13,8 @@ table{
     padding: 50px;
     background-color:beige;
 
+}
+.product-img{
+    width: 100px;
+    height: 100px;
 }

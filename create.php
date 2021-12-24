@@ -25,16 +25,42 @@ if (!$price) {
     $errors[] = 'product price is required';
 }
 
+if(!is_dir('images')){
+  mkdir('images');
+}
+
 if(empty($errors)){
+
+  $image = $_FILES['image'] ?? null;
+  $imagePath = '';
+
+
+  function randomString($n){
+    $charachters = '0123456789abcdefghiklmnopqrstvxyzABCDEFGHIKLMNOPQRSTVXYZ';
+    $str = '';
+    for($i=0;$i<$n;$i++){
+      $index = rand(0,strlen($charachters)-1);
+      $str = $charachters[$index];
+    }
+  }
+  
+  if($image && $image['tpm_name']){ 
+    $imagePath = 'images/'.randomString(8).'/'.$image['name'];
+    mkdir(dirname($imagePath));
+    move_uploaded_file($image['tmp_name'],$imagePath);
+  }
+
+
   $statment = $pdo->prepare("INSERT INTO products (title,image,description,price,create_date)
-VALUES (:title, :image, :description, :price, :date)
-");
+    VALUES (:title, :image, :description, :price, :date)
+    ");
 $statment->bindValue(':title',$title);
-$statment->bindValue(':image','');
+$statment->bindValue(':image',$imagePath);
 $statment->bindValue(':description',$description);
 $statment->bindValue(':price',$price);
 $statment->bindValue(':date',$date); 
 $statment->execute();
+
 header('Location:index.php');
 }
 }
@@ -63,7 +89,7 @@ header('Location:index.php');
           <?php endforeach;?>
 
       </div>
-    <form action="" method="POST">
+    <form action="" method="POST" enctype="multipart/form-data">
     <button type="submit" class="btn btn-success">Submit</button>
   <div class="mb-3">
     <label>title</label>

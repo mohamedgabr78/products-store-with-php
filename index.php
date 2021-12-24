@@ -1,3 +1,9 @@
+<?php
+
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=products','root','787878');
+$pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+
+$statment = $pdo->prepare('SELECT * FROM products ORDER BY create_date ');
 $statment ->execute();
 $products = $statment->fetchAll(PDO::FETCH_ASSOC);
 
@@ -35,6 +41,7 @@ $products = $statment->fetchAll(PDO::FETCH_ASSOC);
   <thead>
     <tr>
       <th scope="col">#</th>
+      <th scope="col">image</th>
       <th scope="col">title</th>
       <th scope="col">price</th>
       <th scope="col">Create data</th>
@@ -45,8 +52,10 @@ $products = $statment->fetchAll(PDO::FETCH_ASSOC);
 <?php foreach($products as $i => $product):?>
     <tr>
       <th scope="row"><?php echo $i+1  ?></th>
+      <td><img class="product-img" src="<?php echo $product['image'] ?>"></td>
       <td><?php echo $product['title'] ?></td>
       <td><?php echo $product['price'] ?></td>
+      <td><?php echo $product['create_date'] ?></td>
       <td><?php echo $product['create_date'] ?></td>
       <td>
       <button type="button" class="btn btn-primary btn-sm">Edit</button>
