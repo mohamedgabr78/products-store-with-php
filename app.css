@@ -15,7 +15,7 @@ table{
 
 }
 .product-img{
-    width: 100px;
+    width: 150px;
     height: 100px;
 }
 .back_btn{
@@ -23,5 +23,9 @@ table{
     font-weight: bold;
     color: rgb(145, 145, 72);
     text-decoration: none;
+}
+label{
+    color: green;
+    font-size: 20px;
 }
 
